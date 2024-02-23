@@ -1,15 +1,14 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1>Web Leads</h1>
-    @include('leads.table', ['leads' => $webLeads])
+    @foreach ($leads as $leadType => $leadsOfType)
+        @php
+            $activeLeads = $leadsOfType->filter(function ($lead) {
+                return $lead->user && $lead->user->status === 'ACTIVE';
+            });
+        @endphp
 
-    <h1>Mobile Leads</h1>
-    @include('leads.table', ['leads' => $mobileLeads])
-
-    <h1>Auto Leads</h1>
-    @include('leads.table', ['leads' => $autoLeads])
-
-    <h1>Embedded Leads</h1>
-    @include('leads.table', ['leads' => $embeddedLeads])
+        <h1>{{ ucfirst(strtolower($leadType)) }} Leads</h1>
+        @include('partials.table', ['leads' => $activeLeads])
+    @endforeach
 @endsection

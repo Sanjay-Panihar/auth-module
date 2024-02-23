@@ -8,26 +8,18 @@ use Illuminate\Support\Facades\Cache;
 
 class LeadController extends Controller
 {
-    public function index()
-    {
-        $webLeads = $this->getLeadsByType('WEB');
-        $mobileLeads = $this->getLeadsByType('MOBILE');
-        $autoLeads = $this->getLeadsByType('AUTO');
-        $embeddedLeads = $this->getLeadsByType('EMBEDDED');
+    public function index() {
+        $cacheKey = 'leads_data';
 
-        return view('leads.index', compact('webLeads', 'mobileLeads', 'autoLeads', 'embeddedLeads'));
-    }
-    private function getLeadsByType($type)
-    {
-        $cacheKey = 'leads_' . $type;
-
-        return Cache::rememberForever($cacheKey, function () use ($type) {
-            return Lead::with('user')
-                ->where('type', $type)
-                ->whereHas('user', function ($query) {
+        $leads = cache()->remember($cacheKey, now()->addMinutes(10), function () {
+            return Lead::with(['user' => function ($query) {
                     $query->where('status', 'ACTIVE');
-                })
-                ->get();
+                }])
+                ->whereIn('type', ['WEB', 'MOBILE', 'AUTO', 'EMBEDDED'])
+                ->get()
+                ->groupBy('type');
         });
+
+        return view('leads.index', compact('leads'));
     }
 }
