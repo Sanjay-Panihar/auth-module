@@ -15,6 +15,9 @@ class LeadController extends Controller
                         $query->where('status', 'ACTIVE');
                     }])
                     ->whereIn('type', ['WEB', 'MOBILE', 'AUTO', 'EMBEDDED'])
+                    ->whereHas('user', function ($query) {
+                        $query->where('status', 'ACTIVE');
+                    })
                     ->get()
                     ->groupBy('type');
 
@@ -22,5 +25,5 @@ class LeadController extends Controller
         });
 
         return $view;
-            }
+    }
 }
